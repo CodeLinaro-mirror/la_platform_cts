@@ -1,7 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
 /*
- * Copyright (C) 2009 The Android Open Source Project
+ * Copyright (C) 2010 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
--->
 
-<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <!-- Label for this package -->
-    <string name="label">Android CTS - Account</string>
-</resources>
+package android.content.cts;
+
+import android.app.Service;
+import android.content.Intent;
+import android.os.IBinder;
+
+public class MockSyncAdapterService extends Service {
+    @Override
+    public IBinder onBind(Intent intent) {
+        return MockSyncAdapter.getMockSyncAdapter();
+    }
+}

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-/*
- * Copyright (C) 2009 The Android Open Source Project
+/**
+ * Copyright (c) 2009, The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,12 @@
  */
 -->
 
-<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <!-- Label for this package -->
-    <string name="label">Android CTS - Account</string>
-</resources>
+<!-- The attributes in this XML file provide configuration information -->
+<!-- for the Account Manager. -->
+
+<account-authenticator xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accountType="android.content.cts.account.type"
+    android:icon="@drawable/ic_cts_selected"
+    android:smallIcon="@drawable/ic_cts_minitab_selected"
+    android:label="Android CTS"
+/>
