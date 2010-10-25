@@ -679,7 +679,6 @@ public class BuildDalvikSuite {
                 + ".java";
         File f = new File(absPath);
 
-
         Scanner scanner;
         try {
             scanner = new Scanner(f);
@@ -730,6 +729,9 @@ public class BuildDalvikSuite {
                 }
                 }
             }
+	    if (reader != null) {
+		reader.close();
+	    }
         } catch (Exception e) {
             throw new RuntimeException("failed to parse", e);
         }
@@ -786,6 +788,12 @@ public class BuildDalvikSuite {
         md.methodBody = builder.toString();
         md.constraint = constraint;
         md.title = title;
+	if (scanner != null) {
+	    scanner.close();
+	}
+	if (scanner2 != null) {
+	    scanner.close();
+	}
         return md;
     }
 
