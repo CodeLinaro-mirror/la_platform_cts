@@ -19,33 +19,45 @@
 
 include cts/CtsTestCaseList.mk
 
-CTS_API_COVERAGE_DEPENDENCIES := cts-api-coverage dexdeps $(ACP)
+CTS_API_COVERAGE_EXE := $(HOST_OUT_EXECUTABLES)/cts-api-coverage
+DEXDEPS_EXE := $(HOST_OUT_EXECUTABLES)/dexdeps
+
+COVERAGE_OUT := $(HOST_OUT)/cts-api-coverage
+cts-test-coverage-report := $(COVERAGE_OUT)/test-coverage.html
+cts-verifier-coverage-report := $(COVERAGE_OUT)/verifier-coverage.html
+
+CTS_API_COVERAGE_DEPENDENCIES := $(CTS_API_COVERAGE_EXE) $(DEXDEPS_EXE) $(ACP)
+
+$(cts-test-coverage-report) : $(CTS_COVERAGE_TEST_CASE_LIST) $(CTS_API_COVERAGE_DEPENDENCIES)
+	$(call generate-coverage-report,"CTS Tests API Coverage Report",\
+			$(CTS_COVERAGE_TEST_CASE_LIST),html,test-coverage.html)
+
+$(cts-verifier-coverage-report) : CtsVerifier $(CTS_API_COVERAGE_DEPENDENCIES)
+	$(call generate-coverage-report,"CTS Verifier API Coverage Report",\
+			CtsVerifier,html,verifier-coverage.html)
 
 .PHONY: cts-test-coverage
-cts-test-coverage: $(CTS_COVERAGE_TEST_CASE_LIST) $(CTS_API_COVERAGE_DEPENDENCIES)
-	$(call generate-coverage-report,"CTS Tests API Coverage Report",\
-			$(CTS_COVERAGE_TEST_CASE_LIST),xml,$(HOST_OUT)/cts/test-coverage,api-coverage.xml)
+cts-test-coverage : $(cts-test-coverage-report)
 
 .PHONY: cts-verifier-coverage
-cts-verifier-coverage: CtsVerifier $(CTS_API_COVERAGE_DEPENDENCIES)
-	$(call generate-coverage-report,"CTS Verifier API Coverage Report",\
-			CtsVerifier,xml,$(HOST_OUT)/cts/verifier-coverage,api-coverage.xml)
+cts-verifier-coverage : $(cts-verifier-coverage-report)
+
+# Put the test coverage report in the dist dir if "cts" is among the build goals.
+ifneq ($(filter cts, $(MAKECMDGOALS)),)
+  $(call dist-for-goals, cts, $(cts-test-coverage-report):cts-test-coverage-report.html)
+  $(call dist-for-goals, cts, $(cts-verifier-coverage-report):cts-verifier-coverage-report.html)
+endif
 
 # Arguments;
 #  1 - Name of the report printed out on the screen
 #  2 - Name of APK packages that will be scanned to generate the report
 #  3 - Format of the report
-#  4 - Output directory to put the report
-#  5 - Output file name of the report
+#  4 - Output file name of the report
 define generate-coverage-report
-	$(hide) rm -rf $(4)
-	$(hide) mkdir -p $(4)
-	$(hide) $(ACP) cts/tools/cts-api-coverage/res/* $(4)
-
 	$(foreach testcase,$(2),$(eval $(call add-testcase-apk,$(testcase))))
-	$(hide) cts-api-coverage -f $(3) -o $(4)/$(5) $(TEST_APKS)
-
-	@echo $(1): file://$(ANDROID_BUILD_TOP)/$(4)/$(5)
+	$(hide) mkdir -p $(COVERAGE_OUT)
+	$(hide) $(CTS_API_COVERAGE_EXE) -d $(DEXDEPS_EXE) -f $(3) -o $(COVERAGE_OUT)/$(4) $(TEST_APKS)
+	$(hide) echo $(1): file://$(ANDROID_BUILD_TOP)/$(COVERAGE_OUT)/$(4)
 endef
 
 define add-testcase-apk

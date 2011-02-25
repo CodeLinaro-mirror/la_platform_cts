@@ -29,6 +29,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.transform.TransformerException;
+
 /**
  * Tool that generates a report of what Android framework methods are being called from a given
  * set of APKS. See the {@link #printUsage()} method for more details.
@@ -38,6 +40,8 @@ public class CtsApiCoverage {
     private static final int FORMAT_TXT = 0;
 
     private static final int FORMAT_XML = 1;
+
+    private static final int FORMAT_HTML = 2;
 
     private static void printUsage() {
         System.out.println("Usage: cts-api-coverage [OPTION]... [APK]...");
@@ -51,8 +55,9 @@ public class CtsApiCoverage {
         System.out.println("directory and dexdeps must be built via \"make dexdeps\".");
         System.out.println();
         System.out.println("Options:");
-        System.out.println("  -o FILE         output file or standard out if not given");
-        System.out.println("  -f [txt|xml]    format of output either text or xml");
+        System.out.println("  -o FILE              output file or standard out if not given");
+        System.out.println("  -f [txt|xml|html]    format of output");
+        System.out.println("  -d PATH              path to dexdeps or expected to be in $PATH");
         System.out.println();
         System.exit(1);
     }
@@ -61,28 +66,25 @@ public class CtsApiCoverage {
         List<File> testApks = new ArrayList<File>();
         File outputFile = null;
         int format = FORMAT_TXT;
+        String dexDeps = "dexDeps";
 
         for (int i = 0; i < args.length; i++) {
             if (args[i].startsWith("-")) {
                 if ("-o".equals(args[i])) {
-                    if (i + 1 < args.length) {
-                        outputFile = new File(args[++i]);;
-                    } else {
-                        printUsage();
-                    }
+                    outputFile = new File(getExpectedArg(args, ++i));
                 } else if ("-f".equals(args[i])) {
-                    if (i + 1 < args.length) {
-                        String formatArg = args[++i];
-                        if ("xml".equalsIgnoreCase(formatArg)) {
-                            format = FORMAT_XML;
-                        } else if ("txt".equalsIgnoreCase(formatArg)) {
-                            format = FORMAT_TXT;
-                        } else {
-                            printUsage();
-                        }
+                    String formatSpec = getExpectedArg(args, ++i);
+                    if ("xml".equalsIgnoreCase(formatSpec)) {
+                        format = FORMAT_XML;
+                    } else if ("txt".equalsIgnoreCase(formatSpec)) {
+                        format = FORMAT_TXT;
+                    } else if ("html".equalsIgnoreCase(formatSpec)) {
+                        format = FORMAT_HTML;
                     } else {
                         printUsage();
                     }
+                } else if ("-d".equals(args[i])) {
+                    dexDeps = getExpectedArg(args, ++i);
                 } else {
                     printUsage();
                 }
@@ -104,9 +106,19 @@ public class CtsApiCoverage {
 
         ApiCoverage apiCoverage = getEmptyApiCoverage();
         for (File testApk : testApks) {
-            addApiCoverage(apiCoverage, testApk);
+            addApiCoverage(apiCoverage, testApk, dexDeps);
         }
         outputCoverageReport(apiCoverage, testApks, outputFile, format);
+    }
+
+    /** Get the argument or print out the usage and exit. */
+    private static String getExpectedArg(String[] args, int index) {
+        if (index < args.length) {
+            return args[index];
+        } else {
+            printUsage();
+            return null;    // Never will happen because printUsage will call exit(1)
+        }
     }
 
     /**
@@ -143,18 +155,20 @@ public class CtsApiCoverage {
      * @param apiCoverage object to which the coverage statistics will be added to
      * @param testApk containing the tests that will be scanned by dexdeps
      */
-    private static void addApiCoverage(ApiCoverage apiCoverage, File testApk)
+    private static void addApiCoverage(ApiCoverage apiCoverage, File testApk, String dexdeps)
             throws SAXException, IOException {
         XMLReader xmlReader = XMLReaderFactory.createXMLReader();
         DexDepsXmlHandler dexDepsXmlHandler = new DexDepsXmlHandler(apiCoverage);
         xmlReader.setContentHandler(dexDepsXmlHandler);
 
-        Process process = new ProcessBuilder("dexdeps", "--format=xml", testApk.getPath()).start();
+        Process process = new ProcessBuilder(dexdeps, "--format=xml", testApk.getPath()).start();
         xmlReader.parse(new InputSource(process.getInputStream()));
     }
 
     private static void outputCoverageReport(ApiCoverage apiCoverage, List<File> testApks,
-            File outputFile, int format) throws IOException {
+            File outputFile, int format) throws IOException, TransformerException,
+                    InterruptedException {
+
         OutputStream out = outputFile != null
                 ? new FileOutputStream(outputFile)
                 : System.out;
@@ -167,6 +181,10 @@ public class CtsApiCoverage {
 
                 case FORMAT_XML:
                     XmlReport.printXmlReport(testApks, apiCoverage, out);
+                    break;
+
+                case FORMAT_HTML:
+                    HtmlReport.printHtmlReport(testApks, apiCoverage, out);
                     break;
             }
         } finally {
