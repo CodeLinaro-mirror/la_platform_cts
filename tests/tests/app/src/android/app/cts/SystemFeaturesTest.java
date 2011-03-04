@@ -196,7 +196,7 @@ public class SystemFeaturesTest extends InstrumentationTestCase {
     }
 
     public void testNfcFeatures() {
-        if (NfcAdapter.getDefaultAdapter() != null) {
+        if (NfcAdapter.getDefaultAdapter(mContext) != null) {
             assertAvailable(PackageManager.FEATURE_NFC);
         } else {
             assertNotAvailable(PackageManager.FEATURE_NFC);
@@ -260,7 +260,6 @@ public class SystemFeaturesTest extends InstrumentationTestCase {
             assertAvailable(PackageManager.FEATURE_SIP);
             assertAvailable(PackageManager.FEATURE_SIP_VOIP);
         } else {
-            assertNotAvailable(PackageManager.FEATURE_SIP);
             assertNotAvailable(PackageManager.FEATURE_SIP_VOIP);
         }
     }

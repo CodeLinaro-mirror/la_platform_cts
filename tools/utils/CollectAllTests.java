@@ -14,15 +14,26 @@
  * limitations under the License.
  */
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import vogar.Expectation;
+import vogar.ExpectationStore;
+import vogar.ModeId;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -37,11 +48,6 @@ import junit.framework.TestCase;
 import junit.framework.TestResult;
 import junit.textui.ResultPrinter;
 import junit.textui.TestRunner;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 public class CollectAllTests extends DescriptionGenerator {
 
@@ -97,10 +103,13 @@ public class CollectAllTests extends DescriptionGenerator {
     private static String MANIFESTFILE = "";
     private static String TESTSUITECLASS = "";
     private static String ANDROID_MAKE_FILE = "";
+    private static String LIBCORE_EXPECTATION_DIR = null;
 
     private static Test TESTSUITE;
 
     static XMLGenerator xmlGenerator;
+    private static ExpectationStore libcoreVogarExpectationStore;
+    private static ExpectationStore ctsVogarExpectationStore;
 
     public static void main(String[] args) {
         if (args.length > 2) {
@@ -108,11 +117,14 @@ public class CollectAllTests extends DescriptionGenerator {
             MANIFESTFILE = args [1];
             TESTSUITECLASS = args[2];
             if (args.length > 3) {
-                ANDROID_MAKE_FILE = args[3];
+                LIBCORE_EXPECTATION_DIR = args[3];
+            }
+            if (args.length > 4) {
+                ANDROID_MAKE_FILE = args[4];
             }
         } else {
             System.out.println("usage: \n" +
-                "\t... CollectAllTests <output-file> <manifest-file> <testsuite-class-name> <makefile-file>");
+                "\t... CollectAllTests <output-file> <manifest-file> <testsuite-class-name> <makefile-file> <expectation-dir>");
             System.exit(1);
         }
 
@@ -180,6 +192,15 @@ public class CollectAllTests extends DescriptionGenerator {
             xmlGenerator = new MyXMLGenerator(OUTPUTFILE + ".xml");
         } catch (ParserConfigurationException e) {
             System.err.println("Can't initialize XML Generator");
+            System.exit(1);
+        }
+
+        try {
+            libcoreVogarExpectationStore = VogarUtils.provideExpectationStore(LIBCORE_EXPECTATION_DIR);
+            ctsVogarExpectationStore = VogarUtils.provideExpectationStore(CTS_EXPECTATION_DIR);
+        } catch (IOException e) {
+            System.err.println("Can't initialize vogar expectation store");
+            e.printStackTrace(System.err);
             System.exit(1);
         }
 
@@ -302,6 +323,11 @@ public class CollectAllTests extends DescriptionGenerator {
         return getAnnotation(testClass, testName, SUPPRESSED_TEST) != null;
     }
 
+    private boolean hasSideEffects(final Class<? extends TestCase> testClass,
+            final String testName) {
+        return getAnnotation(testClass, testName, SIDE_EFFECT) != null;
+    }
+
     private String getAnnotation(final Class<? extends TestCase> testClass,
             final String testName, final String annotationName) {
         try {
@@ -348,6 +374,15 @@ public class CollectAllTests extends DescriptionGenerator {
             return;
         } else if (isSuppressed(test.getClass(), testName)) {
             System.out.println("ignoring suppressed test: " + test);
+            return;
+        } else if (hasSideEffects(test.getClass(), testName)) {
+            System.out.println("ignoring test with side effects: " + test);
+            return;
+        } else if (VogarUtils.isVogarKnownFailure(libcoreVogarExpectationStore, test.getClass().getName(), testName)) {
+            System.out.println("ignoring libcore expectation known failure: " + test);
+            return;
+        } else if (VogarUtils.isVogarKnownFailure(ctsVogarExpectationStore, test.getClass().getName(), testName)) {
+            System.out.println("ignoring cts expectation known failure: " + test);
             return;
         }
 
