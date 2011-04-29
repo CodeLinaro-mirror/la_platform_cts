@@ -405,10 +405,15 @@ public class CameraTest extends ActivityInstrumentationTestCase2<CameraStubActiv
             parameters.setPreviewSize(size.width, size.height);
             mCamera.setParameters(parameters);
             assertEquals(size, mCamera.getParameters().getPreviewSize());
-            mCamera.startPreview();
-            waitForPreviewDone();
+            checkPreviewCallback();
             assertTrue(mPreviewCallbackResult);
-            mCamera.stopPreview();
+            try {
+                // Wait for a while to throw away the remaining preview frames.
+                Thread.sleep(1000);
+            } catch(Exception e) {
+                // ignore
+            }
+            mPreviewDone.close();
         }
         terminateMessageLooper();
     }
@@ -1169,7 +1174,6 @@ public class CameraTest extends ActivityInstrumentationTestCase2<CameraStubActiv
 
         public void onZoomChange(int value, boolean stopped, Camera camera) {
             mValues.add(value);
-            assertEquals(value, camera.getParameters().getZoom());
             assertFalse(mStopped);
             mStopped = stopped;
             if (stopped) {
@@ -1303,6 +1307,7 @@ public class CameraTest extends ActivityInstrumentationTestCase2<CameraStubActiv
 
         // Ensure the camera can be opened if release is called right after AF.
         mCamera = Camera.open(cameraId);
+        mCamera.setPreviewDisplay(getActivity().getSurfaceView().getHolder());
         mCamera.startPreview();
         mCamera.autoFocus(mAutoFocusCallback);
         mCamera.release();
@@ -1591,7 +1596,7 @@ public class CameraTest extends ActivityInstrumentationTestCase2<CameraStubActiv
             Iterator<Long> it = mFrames.iterator();
             while(it.hasNext()) {
                 long time = it.next();
-                if (arrivalTime - time > 1000 && mFrames.size() > 1) {
+                if (arrivalTime - time > 1000 && mFrames.size() > 2) {
                     it.remove();
                 } else {
                     break;
