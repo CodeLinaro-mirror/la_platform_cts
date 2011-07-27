@@ -92,7 +92,7 @@ public class WebSettingsTest extends ActivityInstrumentationTestCase2<WebViewStu
         Log.i(LOG_TAG, String.format("Checking user agent string %s", actualUserAgentString));
         final String patternString = "Mozilla/5\\.0 \\(Linux; U; Android (.+); (\\w+)-(\\w+);" +
             " (.+) Build/(.+)\\) AppleWebKit/533\\.1 \\(KHTML, like Gecko\\) Version/4\\.0" +
-            " Mobile Safari/533\\.1";
+            "( Mobile)? Safari/533\\.1";
         Log.i(LOG_TAG, String.format("Trying to match pattern %s", patternString));
         final Pattern userAgentExpr = Pattern.compile(patternString);
         Matcher patternMatcher = userAgentExpr.matcher(actualUserAgentString);
@@ -665,12 +665,14 @@ public class WebSettingsTest extends ActivityInstrumentationTestCase2<WebViewStu
         String url = TestHtmlConstants.EMBEDDED_IMG_URL;
         String ext = MimeTypeMap.getFileExtensionFromUrl(url);
         loadAssetUrl(url);
+        Thread.sleep(1000);
         assertFalse(mWebServer.getLastRequestUrl().endsWith(ext));
 
         mWebView.clearCache(true);
         mSettings.setLoadsImagesAutomatically(false);
         assertFalse(mSettings.getLoadsImagesAutomatically());
         loadAssetUrl(url);
+        Thread.sleep(1000);
         assertTrue(mWebServer.getLastRequestUrl().endsWith(ext));
     }
 

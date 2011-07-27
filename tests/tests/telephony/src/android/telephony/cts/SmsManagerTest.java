@@ -62,19 +62,33 @@ public class SmsManagerTest extends AndroidTestCase {
                     "44010",    // NTT DOCOMO
                     "45005",    // SKT Mobility
                     "45002",    // SKT Mobility
-                    "45008"     // KT Mobility
+                    "45008",    // KT Mobility
+                    "45006",    // LGT
+                    "311660",   // MetroPCS
+                    "310120",   // Sprint
+                    "44053",    // KDDI
+                    "44054",    // KDDI
+                    "44070",    // KDDI
+                    "44071",    // KDDI
+                    "44072",    // KDDI
+                    "44073",    // KDDI
+                    "44074",    // KDDI
+                    "44075",    // KDDI
+                    "44076"     // KDDI
             );
 
     // List of network operators that doesn't support Data(binary) SMS message
     private static final List<String> UNSUPPORT_DATA_SMS_MESSAGES =
             Arrays.asList(
-                    "44010"    // NTT DOCOMO
+                    "44010",    // NTT DOCOMO
+                    "44020"     // SBM
             );
 
     // List of network operators that doesn't support Maltipart SMS message
     private static final List<String> UNSUPPORT_MULTIPART_SMS_MESSAGES =
             Arrays.asList(
-                    "44010"    // NTT DOCOMO
+                    "44010",    // NTT DOCOMO
+                    "44020"     // SBM
             );
 
     private TelephonyManager mTelephonyManager;
@@ -102,11 +116,8 @@ public class SmsManagerTest extends AndroidTestCase {
 
         if (!mPackageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY)) {
             mDeliveryReportSupported = false;
-        } else if (mTelephonyManager.getPhoneType() == TelephonyManager.PHONE_TYPE_CDMA) {
-            // CDMA supports SMS delivery report
-            mDeliveryReportSupported = true;
         } else {
-            // is this a GSM network that doesn't support SMS delivery report?
+            // exclude the networks that don't support SMS delivery report
             String mccmnc = mTelephonyManager.getSimOperator();
             mDeliveryReportSupported = !(NO_DELIVERY_REPORTS.contains(mccmnc));
         }
