@@ -18,7 +18,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="com.android.cts.verifier"
       android:versionCode="1"
-      android:versionName="4.0.3_r1">
+      android:versionName="4.0.3_r2">
 
     <!-- Using 10 for more complete NFC support... -->
     <uses-sdk android:minSdkVersion="10"></uses-sdk>
@@ -257,7 +257,6 @@
                 android:label="@string/aq_verifier">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.cts.intent.category.MANUAL_TEST" />
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/test_category_audio" />
             <meta-data android:name="test_required_features" android:value="android.hardware.microphone" />
