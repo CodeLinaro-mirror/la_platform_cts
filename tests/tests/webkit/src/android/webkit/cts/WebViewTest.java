@@ -48,6 +48,7 @@ import android.webkit.DownloadListener;
 import android.webkit.SslErrorHandler;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
+import android.webkit.WebIconDatabase;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebView.HitTestResult;
@@ -86,6 +87,7 @@ public class WebViewTest extends ActivityInstrumentationTestCase2<WebViewStubAct
     private WebView mWebView;
     private CtsTestServer mWebServer;
     private WebViewOnUiThread mOnUiThread;
+    private WebIconDatabase mIconDb;
 
     public WebViewTest() {
         super("com.android.cts.stub", WebViewStubActivity.class);
@@ -107,6 +109,11 @@ public class WebViewTest extends ActivityInstrumentationTestCase2<WebViewStubAct
         mOnUiThread.cleanUp();
         if (mWebServer != null) {
             mWebServer.shutdown();
+        }
+        if (mIconDb != null) {
+            mIconDb.removeAllIcons();
+            mIconDb.close();
+            mIconDb = null;
         }
         super.tearDown();
     }
@@ -773,7 +780,7 @@ public class WebViewTest extends ActivityInstrumentationTestCase2<WebViewStubAct
     }
 
     @UiThreadTest
-    public void testLoadDataWithBaseUrl() throws Exception {
+    public void testLoadDataWithBaseUrl() throws Throwable {
         assertNull(mWebView.getTitle());
         assertNull(mWebView.getUrl());
         String imgUrl = TestHtmlConstants.SMALL_IMG_URL; // relative
@@ -782,6 +789,9 @@ public class WebViewTest extends ActivityInstrumentationTestCase2<WebViewStubAct
         startWebServer(false);
         String baseUrl = mWebServer.getAssetUrl("foo.html");
         String historyUrl = "random";
+        String dbPath = getActivity().getFilesDir().toString() + "/icons";
+        mIconDb = WebIconDatabase.getInstance();
+        mIconDb.open(dbPath);
         mWebServer.resetRequestState();
         // force the favicon to be loaded first
         mOnUiThread.loadDataWithBaseURLAndWaitForCompletion(baseUrl,
@@ -790,7 +800,9 @@ public class WebViewTest extends ActivityInstrumentationTestCase2<WebViewStubAct
         new PollingCheck() {
             @Override
             protected boolean check() {
-                return mWebServer.getLastRequestUrl().endsWith("favicon.ico");
+                String lastRequestedUrl = mWebServer.getLastRequestUrl();
+                return lastRequestedUrl != null
+                        && lastRequestedUrl.endsWith("favicon.ico");
             }
         }.run();
         mOnUiThread.loadDataWithBaseURLAndWaitForCompletion(baseUrl,
@@ -1164,6 +1176,7 @@ public class WebViewTest extends ActivityInstrumentationTestCase2<WebViewStubAct
         final String imgUrl = mWebServer.getAssetUrl(TestHtmlConstants.LARGE_IMG_URL);
         mOnUiThread.loadDataAndWaitForCompletion(
                 "<html><title>Title</title><body><img src=\"" + imgUrl
+                + "\" width=\"" + imgWidth + "\" height=\"" + imgHeight
                 + "\"/></body></html>", "text/html", null);
         getInstrumentation().waitForIdleSync();
 
