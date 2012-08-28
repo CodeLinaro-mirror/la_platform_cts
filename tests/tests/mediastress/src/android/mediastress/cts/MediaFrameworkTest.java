@@ -23,10 +23,13 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.PowerManager;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ImageView;
 
 import com.android.cts.mediastress.R;
@@ -34,9 +37,6 @@ import com.android.cts.mediastress.R;
 public class MediaFrameworkTest extends Activity implements SurfaceHolder.Callback {
     private static String TAG = "MediaFrameworkTest";
     private static SurfaceView mSurfaceView;
-
-    private Bitmap mDestBitmap;
-    private ImageView mOverlayView;
 
     private PowerManager.WakeLock mWakeLock = null;
 
@@ -50,13 +50,7 @@ public class MediaFrameworkTest extends Activity implements SurfaceHolder.Callba
         super.onCreate(icicle);
         setContentView(R.layout.surface_view);
         mSurfaceView = (SurfaceView)findViewById(R.id.surface_view);
-        mOverlayView = (ImageView)findViewById(R.id.overlay_layer);
-        ViewGroup.LayoutParams lp = mSurfaceView.getLayoutParams();
         mSurfaceView.getHolder().addCallback(this);
-
-        mOverlayView.setLayoutParams(lp);
-        mDestBitmap = Bitmap.createBitmap((int)640, (int)480, Bitmap.Config.ARGB_8888);
-        mOverlayView.setImageBitmap(mDestBitmap);
 
         //Acquire the full wake lock to keep the device up
         PowerManager pm = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
