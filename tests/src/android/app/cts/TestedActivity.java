@@ -20,10 +20,8 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.os.Looper;
 import android.os.MessageQueue;
-import android.util.Log;
 
 public class TestedActivity extends Activity {
-    private static final String TAG = "TestedActivity" ;
     public TestedActivity() {
     }
 
@@ -51,7 +49,6 @@ public class TestedActivity extends Activity {
 
     private class Idler implements MessageQueue.IdleHandler {
         public final boolean queueIdle() {
-            Log.i(TAG, "idle");
             setResult(RESULT_OK);
             finish();
             return false;

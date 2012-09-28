@@ -17,6 +17,7 @@
     description="Runs a CTS plan from a pre-existing CTS installation">
 
     <option name="enable-root" value="false" />
+    <option name="disable-keyguard" value="false" />
     <build_provider class="com.android.cts.tradefed.build.CtsBuildProvider" />
     <device_recovery class="com.android.tradefed.device.WaitDeviceRecovery" />
     <test class="com.android.cts.tradefed.testtype.CtsTest" />

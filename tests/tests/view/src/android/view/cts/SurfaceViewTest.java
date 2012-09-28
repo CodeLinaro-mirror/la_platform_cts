@@ -18,7 +18,6 @@ package android.view.cts;
 
 import android.app.Instrumentation;
 import android.content.Context;
-import android.cts.util.PollingCheck;
 import android.graphics.Canvas;
 import android.graphics.PixelFormat;
 import android.graphics.Region;
@@ -31,6 +30,7 @@ import android.view.SurfaceView;
 import android.view.cts.SurfaceViewStubActivity.MockSurfaceView;
 
 public class SurfaceViewTest extends ActivityInstrumentationTestCase2<SurfaceViewStubActivity> {
+    private static final long WAIT_TIME = 1000;
 
     private Context mContext;
     private Instrumentation mInstrumentation;
@@ -136,17 +136,13 @@ public class SurfaceViewTest extends ActivityInstrumentationTestCase2<SurfaceVie
     }
 
     public void testOnDetachedFromWindow() {
-        final MockSurfaceView mockSurfaceView = getActivity().getSurfaceView();
+        MockSurfaceView mockSurfaceView = getActivity().getSurfaceView();
         assertFalse(mockSurfaceView.isDetachedFromWindow());
         assertTrue(mockSurfaceView.isShown());
         sendKeys(KeyEvent.KEYCODE_BACK);
-        new PollingCheck() {
-            @Override
-            protected boolean check() {
-                return mockSurfaceView.isDetachedFromWindow() &&
-                       !mockSurfaceView.isShown();
-            }
-        }.run();
+        sleep(WAIT_TIME);
+        assertTrue(mockSurfaceView.isDetachedFromWindow());
+        assertFalse(mockSurfaceView.isShown());
     }
 
     private void sleep(long time) {

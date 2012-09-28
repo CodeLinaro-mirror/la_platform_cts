@@ -17,8 +17,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.android.cts.animation">
     <uses-sdk android:minSdkVersion="11" />
-    <uses-permission android:name="android.permission.INJECT_EVENTS" />
-    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+    <uses-permission android:name="android.permission.INJECT_EVENTS"></uses-permission>
     <application>
         <activity android:name="android.animation.cts.AnimationActivity"
             android:label="AnimationActivity"/>
@@ -27,7 +26,7 @@
         <uses-library android:name="android.test.runner" />
     </application>
 
-    <instrumentation android:name="android.test.InstrumentationCtsTestRunner"
+    <instrumentation android:name="android.test.InstrumentationTestRunner"
                      android:targetPackage="com.android.cts.animation"
                      android:label="CTS tests for android.animation package"/>
 </manifest>

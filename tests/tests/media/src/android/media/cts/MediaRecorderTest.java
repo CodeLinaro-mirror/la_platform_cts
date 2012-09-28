@@ -32,10 +32,6 @@ import android.util.Log;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
-import java.lang.InterruptedException;
-import java.lang.Runnable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 public class MediaRecorderTest extends ActivityInstrumentationTestCase2<MediaStubActivity> {
     private final String TAG = "MediaRecorderTest";
@@ -51,7 +47,7 @@ public class MediaRecorderTest extends ActivityInstrumentationTestCase2<MediaStu
     private static final int AUDIO_NUM_CHANNELS = 1;
     private static final int AUDIO_SAMPLE_RATE_HZ = 8000;
     private static final long MAX_FILE_SIZE = 5000;
-    private static final int MAX_DURATION_MSEC = 2000;
+    private static final int MAX_DURATION_MSEC = 200;
     private static final float LATITUDE = 0.0000f;
     private static final float LONGITUDE  = -180.0f;
     private boolean mOnInfoCalled;
@@ -71,43 +67,21 @@ public class MediaRecorderTest extends ActivityInstrumentationTestCase2<MediaStu
                 "record2.out").getAbsolutePath();
     }
 
-    private void completeOnUiThread(final Runnable runnable) {
-        final CountDownLatch latch = new CountDownLatch(1);
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                runnable.run();
-                latch.countDown();
-            }
-        });
-        try {
-            // if UI thread does not run, things will fail anyway
-            assertTrue(latch.await(10, TimeUnit.SECONDS));
-        } catch (java.lang.InterruptedException e) {
-            fail("should not be interrupted");
-        }
-    }
-
     @Override
     protected void setUp() throws Exception {
         mActivity = getActivity();
-        completeOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mMediaRecorder = new MediaRecorder();
-                mOutFile = new File(OUTPUT_PATH);
-                mOutFile2 = new File(OUTPUT_PATH2);
-                mMediaRecorder.setOutputFile(OUTPUT_PATH);
-                mMediaRecorder.setOnInfoListener(new OnInfoListener() {
-                    public void onInfo(MediaRecorder mr, int what, int extra) {
-                        mOnInfoCalled = true;
-                    }
-                });
-                mMediaRecorder.setOnErrorListener(new OnErrorListener() {
-                    public void onError(MediaRecorder mr, int what, int extra) {
-                        mOnErrorCalled = true;
-                    }
-                });
+        mOutFile = new File(OUTPUT_PATH);
+        mOutFile2 = new File(OUTPUT_PATH2);
+        mMediaRecorder.reset();
+        mMediaRecorder.setOutputFile(OUTPUT_PATH);
+        mMediaRecorder.setOnInfoListener(new OnInfoListener() {
+            public void onInfo(MediaRecorder mr, int what, int extra) {
+                mOnInfoCalled = true;
+            }
+        });
+        mMediaRecorder.setOnErrorListener(new OnErrorListener() {
+            public void onError(MediaRecorder mr, int what, int extra) {
+                mOnErrorCalled = true;
             }
         });
         super.setUp();
@@ -116,7 +90,6 @@ public class MediaRecorderTest extends ActivityInstrumentationTestCase2<MediaStu
     @Override
     protected void tearDown() throws Exception {
         mMediaRecorder.release();
-        mMediaRecorder = null;
         if (mOutFile != null && mOutFile.exists()) {
             mOutFile.delete();
         }
@@ -157,7 +130,7 @@ public class MediaRecorderTest extends ActivityInstrumentationTestCase2<MediaStu
         recordVideoUsingCamera(true);
     }
 
-    private void recordVideoUsingCamera(boolean timelapse) throws Exception {
+    public void recordVideoUsingCamera(boolean timelapse) throws Exception {
         int nCamera = Camera.getNumberOfCameras();
         int durMs = timelapse? 4000: 1000;
         for (int cameraId = 0; cameraId < nCamera; cameraId++) {
@@ -397,9 +370,10 @@ public class MediaRecorderTest extends ActivityInstrumentationTestCase2<MediaStu
         mMediaRecorder.start();
         Thread.sleep(RECORD_TIME);
         mMediaRecorder.stop();
-
+        // onErrorListner sometimes fails in the 3rd assert.
+        // Fix trial: give some time to write, but this may not fix it.
+        Thread.sleep(1000);
         assertTrue(outFile.exists());
-
         // The max file size is always guaranteed.
         // We just make sure that the margin is not too big
         assertTrue(outFile.length() < 1.1 * maxFileSize);
