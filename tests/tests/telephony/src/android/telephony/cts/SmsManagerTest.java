@@ -29,7 +29,6 @@ import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
 import android.telephony.TelephonyManager;
 import android.test.AndroidTestCase;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,7 +41,6 @@ import java.util.List;
  */
 public class SmsManagerTest extends AndroidTestCase {
 
-    private static final String TAG = "SmsManagerTest";
     private static final String LONG_TEXT =
         "This is a very long text. This text should be broken into three " +
         "separate messages.This is a very long text. This text should be broken into " +
@@ -84,30 +82,7 @@ public class SmsManagerTest extends AndroidTestCase {
                     "310000",   // Tracfone
                     "46003",    // China Telecom
                     "311230",   // C SPire Wireless + Celluar South
-                    "310600",    // Cellcom
-                    // Verizon
-                    "310004",
-                    "310012",
-                    "311280",
-                    "311281",
-                    "311282",
-                    "311283",
-                    "311284",
-                    "311285",
-                    "311286",
-                    "311287",
-                    "311288",
-                    "311289",
-                    "311480",
-                    "311481",
-                    "311482",
-                    "311483",
-                    "311484",
-                    "311485",
-                    "311486",
-                    "311487",
-                    "311488",
-                    "311489"
+                    "310600"    // Cellcom
             );
 
     // List of network operators that doesn't support Data(binary) SMS message
@@ -121,30 +96,7 @@ public class SmsManagerTest extends AndroidTestCase {
                     "30237",    // Fido
                     "45008",    // KT
                     "45005",    // SKT Mobility
-                    "45002",     // SKT Mobility
-                    // Verizon
-                    "310004",
-                    "310012",
-                    "311280",
-                    "311281",
-                    "311282",
-                    "311283",
-                    "311284",
-                    "311285",
-                    "311286",
-                    "311287",
-                    "311288",
-                    "311289",
-                    "311480",
-                    "311481",
-                    "311482",
-                    "311483",
-                    "311484",
-                    "311485",
-                    "311486",
-                    "311487",
-                    "311488",
-                    "311489"
+                    "45002"     // SKT Mobility
             );
 
     // List of network operators that doesn't support Maltipart SMS message
@@ -371,11 +323,12 @@ public class SmsManagerTest extends AndroidTestCase {
                 mReceivedDataSms = true;
                 mReceivedText=sb.toString();
             }
-            Log.i(TAG, "onReceive " + intent.getAction());
             if (intent.getAction().equals(mAction)) {
                 synchronized (mLock) {
                     mCalls += 1;
-                    mLock.notify();
+                    if (mCalls >= mExpectedCalls) {
+                        mLock.notify();
+                    }
                 }
             }
         }

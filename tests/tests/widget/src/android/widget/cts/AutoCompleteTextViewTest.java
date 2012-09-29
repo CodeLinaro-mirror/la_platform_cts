@@ -25,7 +25,6 @@ import org.xmlpull.v1.XmlPullParserException;
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Context;
-import android.cts.util.PollingCheck;
 import android.graphics.Rect;
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.UiThreadTest;
@@ -374,12 +373,7 @@ public class AutoCompleteTextViewTest extends
         mInstrumentation.sendStringSync(testString);
 
         // onFilterComplete will close the popup.
-        new PollingCheck() {
-            @Override
-            protected boolean check() {
-                return !mAutoCompleteTextView.isPopupShowing();
-            }
-        }.run();
+        assertFalse(mAutoCompleteTextView.isPopupShowing());
 
         if (mNumeric) {
             // "that" in case of 12-key(NUMERIC) keyboard
@@ -388,12 +382,7 @@ public class AutoCompleteTextViewTest extends
             testString = "that";
         }
         mInstrumentation.sendStringSync(testString);
-        new PollingCheck() {
-            @Override
-            protected boolean check() {
-                return !mAutoCompleteTextView.isPopupShowing();
-            }
-        }.run();
+        assertFalse(mAutoCompleteTextView.isPopupShowing());
 
         // Test the expected filter matching scene
         runTestOnUiThread(new Runnable() {
@@ -411,12 +400,9 @@ public class AutoCompleteTextViewTest extends
         }
         assertTrue(mAutoCompleteTextView.hasFocus());
         assertTrue(mAutoCompleteTextView.hasWindowFocus());
-        new PollingCheck() {
-            @Override
-            protected boolean check() {
-                return mAutoCompleteTextView.isPopupShowing();
-            }
-        }.run();
+        // give some time for UI to settle
+        Thread.sleep(200);
+        assertTrue(mAutoCompleteTextView.isPopupShowing());
     }
 
     public void testPerformFiltering() throws Throwable {
@@ -464,7 +450,7 @@ public class AutoCompleteTextViewTest extends
         });
         mInstrumentation.waitForIdleSync();
         // Create and get the filter.
-        final MockFilter filter = (MockFilter) adapter.getFilter();
+        MockFilter filter = (MockFilter) adapter.getFilter();
 
         // performFiltering will be indirectly invoked by onKeyDown
         assertNull(filter.getResult());
@@ -472,20 +458,13 @@ public class AutoCompleteTextViewTest extends
         if (mNumeric) {
             // "numeric" in case of 12-key(NUMERIC) keyboard
             mInstrumentation.sendStringSync("6688633777444222");
-            new PollingCheck() {
-                @Override
-                protected boolean check() {
-                    return "numeric".equals(filter.getResult());
-                }
-            }.run();
+            Thread.sleep(100);
+            assertEquals("numeric", filter.getResult());
         } else {
             mInstrumentation.sendStringSync(STRING_TEST);
-            new PollingCheck() {
-                @Override
-                protected boolean check() {
-                    return STRING_TEST.equals(filter.getResult());
-                }
-            }.run();
+            // give some time for UI to settle
+            Thread.sleep(100);
+            assertEquals(STRING_TEST, filter.getResult());
         }
     }
 
