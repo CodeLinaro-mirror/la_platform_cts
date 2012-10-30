@@ -17,6 +17,8 @@ package android.webkit.cts;
 
 import libcore.io.Base64;
 import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -61,6 +63,7 @@ import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
@@ -84,8 +87,6 @@ import javax.net.ssl.X509TrustManager;
  */
 public class CtsTestServer {
     private static final String TAG = "CtsTestServer";
-    private static final int SERVER_PORT = 4444;
-    private static final int SSL_SERVER_PORT = 4445;
 
     public static final String FAVICON_PATH = "/favicon.ico";
     public static final String USERAGENT_PATH = "/useragent.html";
@@ -117,7 +118,6 @@ public class CtsTestServer {
     public static final String MESSAGE_403 = "403 forbidden";
     public static final String MESSAGE_404 = "404 not found";
 
-    private static CtsTestServer sInstance;
     private static Hashtable<Integer, String> sReasons;
 
     private ServerThread mServerThread;
@@ -127,6 +127,7 @@ public class CtsTestServer {
     private boolean mSsl;
     private MimeTypeMap mMap;
     private String mLastQuery;
+    private ArrayList<HttpEntity> mRequestEntities;
     private int mRequestCount;
     private long mDocValidity;
     private long mDocAge;
@@ -158,22 +159,18 @@ public class CtsTestServer {
      * @throws Exception
      */
     public CtsTestServer(Context context, boolean ssl) throws Exception {
-        if (sInstance != null) {
-            // attempt to start a new instance while one is still running
-            // shut down the old instance first
-            sInstance.shutdown();
-        }
-        sInstance = this;
         mContext = context;
         mAssets = mContext.getAssets();
         mSsl = ssl;
-        if (mSsl) {
-            mServerUri = "https://localhost:" + SSL_SERVER_PORT;
-        } else {
-            mServerUri = "http://localhost:" + SERVER_PORT;
-        }
+        mRequestEntities = new ArrayList<HttpEntity>();
         mMap = MimeTypeMap.getSingleton();
         mServerThread = new ServerThread(this, mSsl);
+        if (mSsl) {
+            mServerUri = "https://localhost:" + mServerThread.mSocket.getLocalPort();
+        } else {
+            mServerUri = "http://localhost:" + mServerThread.mSocket.getLocalPort();
+        }
+
         mServerThread.start();
     }
 
@@ -208,8 +205,6 @@ public class CtsTestServer {
         } catch (KeyManagementException e) {
             throw new IllegalStateException(e);
         }
-
-        sInstance = null;
     }
 
     private URLConnection openConnection(URL url)
@@ -385,6 +380,13 @@ public class CtsTestServer {
         return mLastQuery;
     }
 
+    /**
+     * Returns all received request entities since the last reset.
+     */
+    public synchronized ArrayList<HttpEntity> getRequestEntities() {
+        return mRequestEntities;
+    }
+
     public synchronized int getRequestCount() {
         return mRequestCount;
     }
@@ -408,6 +410,16 @@ public class CtsTestServer {
     }
 
     /**
+     * Resets the saved requests and request counts.
+     */
+    public synchronized void resetRequestState() {
+
+        mRequestCount = 0;
+        mLastQuery = null;
+        mRequestEntities = new ArrayList<HttpEntity>();
+    }
+
+    /**
      * Generate a response to the given request.
      * @throws InterruptedException
      * @throws IOException
@@ -415,12 +427,15 @@ public class CtsTestServer {
     private HttpResponse getResponse(HttpRequest request) throws InterruptedException, IOException {
         RequestLine requestLine = request.getRequestLine();
         HttpResponse response = null;
-        Log.i(TAG, requestLine.getMethod() + ": " + requestLine.getUri());
         String uriString = requestLine.getUri();
+        Log.i(TAG, requestLine.getMethod() + ": " + uriString);
 
         synchronized (this) {
             mRequestCount += 1;
             mLastQuery = uriString;
+            if (request instanceof HttpEntityEnclosingRequest) {
+                mRequestEntities.add(((HttpEntityEnclosingRequest)request).getEntity());
+            }
         }
 
         URI uri = URI.create(uriString);
@@ -745,10 +760,9 @@ public class CtsTestServer {
                     if (mIsSsl) {
                         mSslContext = SSLContext.getInstance("TLS");
                         mSslContext.init(getKeyManagers(), null, null);
-                        mSocket = mSslContext.getServerSocketFactory().createServerSocket(
-                                SSL_SERVER_PORT);
+                        mSocket = mSslContext.getServerSocketFactory().createServerSocket(0);
                     } else {
-                        mSocket = new ServerSocket(SERVER_PORT);
+                        mSocket = new ServerSocket(0);
                     }
                     return;
                 } catch (IOException e) {
@@ -779,6 +793,10 @@ public class CtsTestServer {
                     if (isShutdownRequest(request)) {
                         mIsCancelled = true;
                     }
+                    if (request instanceof HttpEntityEnclosingRequest) {
+                        conn.receiveRequestEntity( (HttpEntityEnclosingRequest) request);
+                    }
+
                     mExecutorService.submit(new HandleResponseTask(conn, request));
                 } catch (IOException e) {
                     // normal during shutdown, ignore
