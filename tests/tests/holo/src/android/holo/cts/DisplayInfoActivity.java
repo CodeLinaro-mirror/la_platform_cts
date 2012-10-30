@@ -37,12 +37,16 @@ public class DisplayInfoActivity extends Activity {
         DisplayMetrics metrics = new DisplayMetrics();
         display.getMetrics(metrics);
 
+        DisplayMetrics dm = getResources().getDisplayMetrics();
+        int width = Math.round(dm.widthPixels / dm.density);
+        int height = Math.round(dm.heightPixels / dm.density);
+
         TextView text = (TextView) findViewById(R.id.text);
         text.setText(getString(R.string.display_info_text, metrics.densityDpi,
-                getScreenDensityBucket(metrics)));
+                getScreenDensityBucket(metrics), width, height));
     }
 
-    private String getScreenDensityBucket(DisplayMetrics metrics) {
+    static String getScreenDensityBucket(DisplayMetrics metrics) {
         switch (metrics.densityDpi) {
             case DisplayMetrics.DENSITY_LOW:
                 return "ldpi";
