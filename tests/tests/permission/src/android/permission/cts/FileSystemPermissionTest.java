@@ -23,10 +23,12 @@ import android.test.AndroidTestCase;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.LargeTest;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -490,7 +492,8 @@ public class FileSystemPermissionTest extends AndroidTestCase {
 
     @LargeTest
     public void testReadingSysFilesDoesntFail() throws Exception {
-        tryToReadFromAllIn(new File("/sys"));
+        // TODO: fix b/8148087
+        // tryToReadFromAllIn(new File("/sys"));
     }
 
     private static void tryToReadFromAllIn(File dir) throws IOException {
@@ -528,15 +531,49 @@ public class FileSystemPermissionTest extends AndroidTestCase {
         }
     }
 
-    private static final Set<File> SYS_EXCEPTIONS = new HashSet<File>(
+    // This set contains all exceptions for writable sysfs, if it is a
+    // directory, all files below that directory are included, so be
+    // careful.
+    private static final Set<String> SYS_EXCEPTIONS = new HashSet<String>(
             Arrays.asList(
-                new File("/sys/kernel/debug/tracing/trace_marker")
+                "/sys/kernel/debug/tracing/trace_marker",
+                "/sys/fs/selinux"
             ));
+
+    private static Set <File> getIgnorablesFromPaths(Set <String> paths) {
+
+        Set <File> ignorable = new HashSet <File> ();
+
+        for(String ignore : paths) {
+               File tmp = new File(ignore);
+
+               File[] files = null;
+               if(tmp.isDirectory()) {
+                    files = tmp.listFiles(new FileFilter() {
+                       @Override public boolean accept(File pathname) {
+                           return pathname.isFile();
+                       }
+                   });
+               }
+               else if(tmp.isFile()){
+                   files = new File[1];
+                   files [0] = tmp;
+               }
+               else {
+                   // Should this be an Exception?
+                   continue;
+               }
+               ignorable.addAll(Arrays.asList(files));
+        }
+        return ignorable;
+    }
 
     @LargeTest
     public void testAllFilesInSysAreNotWritable() throws Exception {
         Set<File> writable = getAllWritableFilesInDirAndSubDir(new File("/sys"));
-        writable.removeAll(SYS_EXCEPTIONS);
+        Set<File> ignorables = getIgnorablesFromPaths(SYS_EXCEPTIONS);
+
+        writable.removeAll(ignorables);
         assertTrue("Found writable: " + writable.toString(),
                 writable.isEmpty());
     }
@@ -580,6 +617,42 @@ public class FileSystemPermissionTest extends AndroidTestCase {
             }
         }
         return retval;
+    }
+
+    public void testSystemMountedRO() throws IOException {
+        assertSystemMountedROIn("/proc/self/mounts");
+    }
+
+    public void testSystemMountedRO_init() throws IOException {
+        assertSystemMountedROIn("/proc/1/mounts");
+    }
+
+    /**
+     * Scan through {@code filename}, looking for the /system line. If the line
+     * has "ro" in the 4th column, then we know the filesystem is mounted read-only.
+     */
+    private static void assertSystemMountedROIn(String filename) throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(filename));
+        String line;
+        boolean foundSystem = false;
+        while((line = br.readLine()) != null) {
+            String[] fields = line.split(" ");
+            String mountPoint = fields[1];
+            if ("/system".equals(mountPoint)) {
+                foundSystem = true;
+                String all_options = fields[3];
+                boolean foundRo = false;
+                String[] options = all_options.split(",");
+                for (String option : options) {
+                    if ("ro".equals(option)) {
+                        foundRo = true;
+                        break;
+                    }
+                }
+                assertTrue(mountPoint + " is not mounted read-only", foundRo);
+            }
+        }
+        assertTrue("Cannot find /system partition", foundSystem);
     }
 
     public void testAllBlockDevicesAreSecure() throws Exception {
