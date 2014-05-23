@@ -30,6 +30,7 @@ import android.net.NetworkInfo.State;
 import android.net.wifi.WifiManager;
 import android.test.AndroidTestCase;
 import android.util.Log;
+import android.os.SystemProperties;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,12 +66,21 @@ public class ConnectivityManagerTest extends AndroidTestCase {
         mCm = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
         mWifiManager = (WifiManager) getContext().getSystemService(Context.WIFI_SERVICE);
         mPackageManager = getContext().getPackageManager();
+        boolean wifiOnly = SystemProperties.getBoolean("ro.radio.noril", false);
 
         String[] naStrings = getContext().getResources().getStringArray(
                 com.android.internal.R.array.networkAttributes);
         for (String naString : naStrings) {
             try {
                 NetworkConfig n = new NetworkConfig(naString);
+                if (n.type > ConnectivityManager.MAX_NETWORK_TYPE) {
+                    // ignoring attempt to define invalid type.
+                    continue;
+                }
+                if (wifiOnly && ConnectivityManager.isNetworkTypeMobile(n.type)) {
+                    // ignoring mobile as this dev is wifiOnly
+                    continue;
+                }
                 mNetworks.put(n.type, n);
             } catch (Exception e) {}
         }
