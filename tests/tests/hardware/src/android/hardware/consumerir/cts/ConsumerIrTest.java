@@ -77,12 +77,12 @@ public class ConsumerIrTest extends AndroidTestCase {
 
         ConsumerIrManager.CarrierFrequencyRange[] freqs = mCIR.getCarrierFrequencies();
         // Transmit two seconds for min and max for each frequency range
-        int[] pattern = {1111, 2222, 3333, 4444, 5555, 6666, 7777, 8888, 9999};
-        long totalXmitTime = 0; // get the length of the pattern
+        int[] pattern = {11111, 22222, 33333, 44444, 55555, 66666, 77777, 88888, 99999};
+        long totalXmitTimeNanos = 0; // get the length of the pattern
         for (int slice : pattern) {
-            totalXmitTime += slice;
+            totalXmitTimeNanos += slice * 1000; // add the time in nanoseconds
         }
-        double margin = 0.1; // max fraction xmit is allowed to be off timing
+        double margin = 0.5; // max fraction xmit is allowed to be off timing
 
         for (ConsumerIrManager.CarrierFrequencyRange range : freqs) {
             // test min freq
@@ -90,18 +90,18 @@ public class ConsumerIrTest extends AndroidTestCase {
             mCIR.transmit(range.getMinFrequency(), pattern);
             long newTime = SystemClock.elapsedRealtimeNanos();
             String msg = String.format("Pattern length pattern:%d, actual:%d",
-                    totalXmitTime, newTime - currentTime);
-            assertTrue(msg, newTime - currentTime >= totalXmitTime * (1.0 - margin));
-            assertTrue(msg, newTime - currentTime <= totalXmitTime * (1.0 + margin));
+                    totalXmitTimeNanos, newTime - currentTime);
+            assertTrue(msg, newTime - currentTime >= totalXmitTimeNanos * (1.0 - margin));
+            assertTrue(msg, newTime - currentTime <= totalXmitTimeNanos * (1.0 + margin));
 
             // test max freq
             currentTime = SystemClock.elapsedRealtimeNanos();
             mCIR.transmit(range.getMaxFrequency(), pattern);
             newTime = SystemClock.elapsedRealtimeNanos();
             msg = String.format("Pattern length pattern:%d, actual:%d",
-                    totalXmitTime, newTime - currentTime);
-            assertTrue(msg, newTime - currentTime >= totalXmitTime * (1.0 - margin));
-            assertTrue(msg, newTime - currentTime <= totalXmitTime * (1.0 + margin));
+                    totalXmitTimeNanos, newTime - currentTime);
+            assertTrue(msg, newTime - currentTime >= totalXmitTimeNanos * (1.0 - margin));
+            assertTrue(msg, newTime - currentTime <= totalXmitTimeNanos * (1.0 + margin));
         }
     }
 
