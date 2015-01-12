@@ -357,6 +357,7 @@ def BuildAospSmallSizeTestList():
 def BuildCtsVettedNewPackagesList():
   """ Construct a defaultdict that maps package names that is vetted for L. """
   return {
+      'android.JobScheduler' : [],
       'android.core.tests.libcore.package.harmony_annotation' : [],
       'android.core.tests.libcore.package.harmony_beans' : [],
       'android.core.tests.libcore.package.harmony_java_io' : [],
@@ -383,6 +384,7 @@ def BuildCtsVettedNewPackagesList():
       'android.uiautomation' : [],
       'android.uirendering' : [],
       'android.webgl' : [],
+      'com.drawelements.deqp.gles3' : [],
       'com.drawelements.deqp.gles31' : []}
 
 def BuildCtsFlakyTestList():
