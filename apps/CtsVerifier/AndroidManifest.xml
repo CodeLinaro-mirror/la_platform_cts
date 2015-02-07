@@ -17,8 +17,8 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="com.android.cts.verifier"
-      android:versionCode="3"
-      android:versionName="5.0_r0.5">
+      android:versionCode="4"
+      android:versionName="5.0_r2">
 
     <uses-sdk android:minSdkVersion="19" android:targetSdkVersion="21"/>
 
@@ -94,6 +94,8 @@
                 <category android:name="android.cts.intent.category.MANUAL_TEST" />
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/test_category_device_admin" />
+            <meta-data android:name="test_required_features"
+                    android:value="android.software.device_admin" />
         </activity>
 
         <!-- A generic activity for intent based tests -->
@@ -108,7 +110,7 @@
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/test_category_device_admin" />
             <meta-data android:name="test_excluded_features"
-                       android:value="android.hardware.type.television:android.software.leanback" />
+                       android:value="android.hardware.type.television:android.software.leanback:android.hardware.type.watch" />
         </activity>
 
         <receiver android:name=".admin.TestDeviceAdminReceiver"
@@ -125,6 +127,8 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.cts.intent.category.MANUAL_TEST" />
             </intent-filter>
+            <meta-data android:name="test_required_features"
+                    android:value="android.software.backup" />
         </activity>
 
         <activity android:name=".bluetooth.BluetoothTestActivity"
@@ -147,6 +151,7 @@
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/bt_control" />
             <meta-data android:name="test_parent" android:value="com.android.cts.verifier.bluetooth.BluetoothTestActivity" />
+            <meta-data android:name="test_excluded_features" android:value="android.software.leanback" />
         </activity>
 
         <activity android:name=".bluetooth.SecureServerActivity"
@@ -229,7 +234,8 @@
         <service android:name=".bluetooth.BleScannerService"
                 android:label="@string/ble_scanner_service_name" />
 
-        <activity android:name=".bluetooth.BleClientTestActivity"
+        <!-- TODO: Enable when test quality issues listed in b/18283088 is resolved -->
+        <!-- activity android:name=".bluetooth.BleClientTestActivity"
                 android:label="@string/ble_client_test_name"
                 android:configChanges="keyboardHidden|orientation|screenSize">
             <intent-filter>
@@ -238,7 +244,9 @@
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/bt_le" />
             <meta-data android:name="test_parent" android:value="com.android.cts.verifier.bluetooth.BluetoothTestActivity" />
-        </activity>
+            <meta-data android:name="test_required_features"
+                       android:value="android.hardware.bluetooth_le"/>
+        </activity -->
 
         <activity android:name=".bluetooth.BleClientConnectActivity"
                 android:label="@string/ble_client_connect_name"
@@ -328,7 +336,8 @@
             <meta-data android:name="test_parent" android:value="com.android.cts.verifier.bluetooth.BleClientTestActivity" />
         </activity>
 
-        <activity android:name=".bluetooth.BleServerStartActivity"
+        <!-- TODO: Enable when test quality issues listed in b/18283088 is resolved -->
+        <!-- activity android:name=".bluetooth.BleServerStartActivity"
                 android:label="@string/ble_server_start_name"
                 android:configChanges="keyboardHidden|orientation|screenSize">
             <intent-filter>
@@ -337,9 +346,12 @@
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/bt_le" />
             <meta-data android:name="test_parent" android:value="com.android.cts.verifier.bluetooth.BluetoothTestActivity" />
-        </activity>
+            <meta-data android:name="test_required_features"
+                       android:value="android.hardware.bluetooth_le"/>
+        </activity -->
 
-        <activity android:name=".bluetooth.BleScannerTestActivity"
+        <!-- TODO: Enable when test quality issues listed in b/18282549 is resolved -->
+        <!-- activity android:name=".bluetooth.BleScannerTestActivity"
                 android:label="@string/ble_scanner_test_name"
                 android:configChanges="keyboardHidden|orientation|screenSize">
             <intent-filter>
@@ -348,7 +360,9 @@
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/bt_le" />
             <meta-data android:name="test_parent" android:value="com.android.cts.verifier.bluetooth.BluetoothTestActivity" />
-        </activity>
+            <meta-data android:name="test_required_features"
+                       android:value="android.hardware.bluetooth_le"/>
+        </activity -->
 
         <activity android:name=".bluetooth.BleScannerPowerLevelActivity"
                 android:label="@string/ble_power_level_name"
@@ -372,7 +386,8 @@
             <meta-data android:name="test_parent" android:value="com.android.cts.verifier.bluetooth.BleScannerTestActivity" />
         </activity>
 
-        <activity android:name=".bluetooth.BleAdvertiserTestActivity"
+        <!-- TODO: Enable when test quality issues listed in b/18282549 is resolved -->
+        <!-- activity android:name=".bluetooth.BleAdvertiserTestActivity"
                 android:label="@string/ble_advertiser_test_name"
                 android:configChanges="keyboardHidden|orientation|screenSize">
             <intent-filter>
@@ -381,7 +396,9 @@
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/bt_le" />
             <meta-data android:name="test_parent" android:value="com.android.cts.verifier.bluetooth.BluetoothTestActivity" />
-        </activity>
+            <meta-data android:name="test_required_features"
+                       android:value="android.hardware.bluetooth_le"/>
+         </activity -->
 
         <activity android:name=".bluetooth.BleAdvertiserPowerLevelActivity"
                 android:label="@string/ble_power_level_name"
@@ -424,7 +441,7 @@
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/test_category_security" />
             <meta-data android:name="test_excluded_features"
-                       android:value="android.hardware.type.television:android.software.leanback" />
+                       android:value="android.hardware.type.television:android.software.leanback:android.hardware.type.watch" />
         </activity>
 
         <activity android:name=".streamquality.StreamingVideoActivity"
@@ -435,6 +452,8 @@
                 <category android:name="android.cts.intent.category.MANUAL_TEST" />
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/test_category_streaming" />
+            <meta-data android:name="test_excluded_features"
+                    android:value="android.hardware.type.watch" />
         </activity>
 
         <activity android:name=".streamquality.PlayVideoActivity"
@@ -779,8 +798,14 @@
                 <category android:name="android.cts.intent.category.MANUAL_TEST" />
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/test_category_sensors" />
-            <meta-data android:name="test_required_features"
-                       android:value="android.hardware.sensor.accelerometer" />
+            <meta-data android:name="test_applicable_features"
+                       android:value="android.hardware.sensor.stepcounter" />
+            <meta-data android:name="test_applicable_features"
+                       android:value="android.hardware.sensor.stepdetector" />
+            <meta-data android:name="test_applicable_features"
+                       android:value="android.hardware.sensor.proximity" />
+            <meta-data android:name="test_applicable_features"
+                       android:value="android.hardware.sensor.light" />
         </activity>
 
         <!-- TODO: enable when a more reliable way to identify time synchronization is available -->
@@ -804,6 +829,14 @@
                 <category android:name="android.cts.intent.category.MANUAL_TEST"/>
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/test_category_sensors"/>
+            <meta-data android:name="test_applicable_features"
+                       android:value="android.hardware.sensor.accelerometer" />
+            <meta-data android:name="test_applicable_features"
+                       android:value="android.hardware.sensor.compass" />
+            <meta-data android:name="test_applicable_features"
+                       android:value="android.hardware.sensor.gyroscope" />
+            <meta-data android:name="test_applicable_features"
+                       android:value="android.hardware.sensor.barometer" />
         </activity>
 
         <activity android:name=".sensors.SensorBatchingTestsActivity"
@@ -814,8 +847,14 @@
                 <category android:name="android.cts.intent.category.MANUAL_TEST"/>
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/test_category_sensors"/>
-            <meta-data android:name="test_excluded_features"
-                       android:value="android.hardware.type.television:android.software.leanback" />
+            <meta-data android:name="test_applicable_features"
+                       android:value="android.hardware.sensor.accelerometer" />
+            <meta-data android:name="test_applicable_features"
+                       android:value="android.hardware.sensor.compass" />
+            <meta-data android:name="test_applicable_features"
+                       android:value="android.hardware.sensor.gyroscope" />
+            <meta-data android:name="test_applicable_features"
+                       android:value="android.hardware.sensor.barometer" />
         </activity>
 
         <activity android:name=".sensors.SensorIntegrationTestsActivity"
@@ -826,6 +865,12 @@
                 <category android:name="android.cts.intent.category.MANUAL_TEST"/>
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/test_category_sensors"/>
+            <meta-data android:name="test_applicable_features"
+                       android:value="android.hardware.sensor.accelerometer" />
+            <meta-data android:name="test_applicable_features"
+                       android:value="android.hardware.sensor.compass" />
+            <meta-data android:name="test_applicable_features"
+                       android:value="android.hardware.sensor.gyroscope" />
         </activity>
 
         <activity android:name=".sensors.SensorTestActivity"
@@ -836,6 +881,18 @@
                 <category android:name="android.cts.intent.category.MANUAL_TEST"/>
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/test_category_sensors"/>
+            <meta-data android:name="test_applicable_features"
+                       android:value="android.hardware.sensor.accelerometer" />
+            <meta-data android:name="test_applicable_features"
+                       android:value="android.hardware.sensor.stepcounter" />
+            <meta-data android:name="test_applicable_features"
+                       android:value="android.hardware.sensor.stepdetector" />
+            <meta-data android:name="test_applicable_features"
+                       android:value="android.hardware.sensor.heartrate" />
+            <meta-data android:name="test_applicable_features"
+                       android:value="android.hardware.sensor.compass" />
+            <meta-data android:name="test_applicable_features"
+                       android:value="android.hardware.sensor.ambient_temperature" />
         </activity>
 
         <!-- End sensor tests definitions -->
@@ -847,6 +904,10 @@
                 <category android:name="android.cts.intent.category.MANUAL_TEST" />
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/test_category_location" />
+            <meta-data android:name="test_excluded_features"
+                    android:value="android.hardware.type.television" />
+            <meta-data android:name="test_excluded_features"
+                    android:value="android.software.leanback" />
         </activity>
         <activity android:name=".location.LocationModeHighAccuracyTestActivity"
                 android:label="@string/location_mode_high_accuracy_test">
@@ -855,8 +916,12 @@
                 <category android:name="android.cts.intent.category.MANUAL_TEST" />
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/test_category_location" />
+            <meta-data android:name="test_required_features"
+                    android:value="android.hardware.location.network:android.hardware.location.gps" />
             <meta-data android:name="test_excluded_features"
-                       android:value="android.hardware.type.television:android.software.leanback" />
+                    android:value="android.hardware.type.television" />
+            <meta-data android:name="test_excluded_features"
+                    android:value="android.software.leanback" />
         </activity>
         <activity android:name=".location.LocationModeBatterySavingTestActivity"
                 android:label="@string/location_mode_battery_saving_test">
@@ -865,6 +930,11 @@
                 <category android:name="android.cts.intent.category.MANUAL_TEST" />
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/test_category_location" />
+            <meta-data android:name="test_required_features" android:value="android.hardware.location.network" />
+            <meta-data android:name="test_excluded_features"
+                    android:value="android.hardware.type.television" />
+            <meta-data android:name="test_excluded_features"
+                    android:value="android.software.leanback" />
         </activity>
         <activity android:name=".location.LocationModeDeviceOnlyTestActivity"
                 android:label="@string/location_mode_device_only_test">
@@ -873,8 +943,11 @@
                 <category android:name="android.cts.intent.category.MANUAL_TEST" />
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/test_category_location" />
+            <meta-data android:name="test_required_features" android:value="android.hardware.location.gps" />
             <meta-data android:name="test_excluded_features"
-                       android:value="android.hardware.type.television:android.software.leanback" />
+                    android:value="android.hardware.type.television" />
+            <meta-data android:name="test_excluded_features"
+                    android:value="android.software.leanback" />
         </activity>
 
         <activity android:name=".camera.formats.CameraFormatsActivity"
@@ -976,6 +1049,8 @@
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/test_category_hardware" />
             <meta-data android:name="test_required_features" android:value="android.hardware.usb.accessory" />
+            <meta-data android:name="test_excluded_features"
+                    android:value="android.hardware.type.watch" />
         </activity>
 <!-- Turned off Sensor Power Test in initial L release
         <activity android:name=".sensors.SensorPowerTestActivity"
@@ -1036,6 +1111,12 @@
                 <category android:name="android.cts.intent.category.MANUAL_TEST" />
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/test_category_notifications" />
+            <meta-data android:name="test_excluded_features"
+                    android:value="android.hardware.type.watch" />
+            <meta-data android:name="test_excluded_features"
+                    android:value="android.hardware.type.television" />
+            <meta-data android:name="test_excluded_features"
+                    android:value="android.software.leanback" />
         </activity>
         <activity android:name=".security.CANotifyOnBootActivity"
                 android:label="@string/caboot_test">
@@ -1044,6 +1125,12 @@
                 <category android:name="android.cts.intent.category.MANUAL_TEST" />
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/test_category_notifications" />
+            <meta-data android:name="test_excluded_features"
+                    android:value="android.hardware.type.watch" />
+            <meta-data android:name="test_excluded_features"
+                    android:value="android.hardware.type.television" />
+            <meta-data android:name="test_excluded_features"
+                    android:value="android.software.leanback" />
         </activity>
 
         <activity android:name=".p2p.GoNegRequesterTestListActivity"
@@ -1091,14 +1178,15 @@
             </intent-filter>
         </activity-alias>
 
-        <activity android:name=".sample.SampleTestActivity"
+        <!-- remove comment from the next activity to see the sample test surfacing in the app -->
+        <!-- activity android:name=".sample.SampleTestActivity"
                   android:label="@string/sample_framework_test">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.cts.intent.category.MANUAL_TEST" />
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/test_category_other" />
-        </activity>
+        </activity -->
 
         <activity android:name=".widget.WidgetTestActivity"
                 android:label="@string/widget_framework_test">
@@ -1107,6 +1195,8 @@
                 <category android:name="android.cts.intent.category.MANUAL_TEST" />
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/test_category_other" />
+            <meta-data android:name="test_required_features"
+                    android:value="android.software.app_widgets" />
         </activity>
 
         <activity android:name=".deskclock.DeskClockTestsActivity"
@@ -1116,6 +1206,10 @@
                 <category android:name="android.cts.intent.category.MANUAL_TEST" />
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/test_category_deskclock" />
+            <meta-data android:name="test_excluded_features"
+                    android:value="android.hardware.type.television" />
+            <meta-data android:name="test_excluded_features"
+                    android:value="android.software.leanback" />
         </activity>
 
 <!-- TODO: enable when not requiring to tap the screen and timeouts are tuned -->
@@ -1147,8 +1241,8 @@
             <meta-data
                 android:name="test_category"
                 android:value="@string/test_category_sensors" />
-            <meta-data android:name="test_excluded_features"
-                       android:value="android.hardware.type.television:android.software.leanback" />
+            <meta-data android:name="test_required_features"
+                       android:value="android.hardware.sensor.accelerometer" />
         </activity>
 
         <receiver android:name=".widget.WidgetCtsProvider">
@@ -1203,6 +1297,8 @@
                 <category android:name="android.cts.intent.category.MANUAL_TEST" />
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/test_category_projection" />
+            <meta-data android:name="test_excluded_features"
+                    android:value="android.hardware.type.watch" />
         </activity>
 
         <activity android:name=".projection.touch.ProjectionTouchActivity"
@@ -1242,7 +1338,8 @@
         </activity>
 
 
-        <activity android:name=".managedprovisioning.ByodFlowTestActivity"
+        <!-- TODO: enable when the test can be executed without leaving marks -->
+        <!-- activity android:name=".managedprovisioning.ByodFlowTestActivity"
                 android:launchMode="singleTask"
                 android:label="@string/provisioning_byod">
             <intent-filter>
@@ -1255,7 +1352,7 @@
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/test_category_managed_provisioning" />
             <meta-data android:name="test_required_features" android:value="android.software.managed_users:android.software.device_admin" />
-        </activity>
+        </activity-->
 
         <activity android:name=".managedprovisioning.ByodHelperActivity">
             <intent-filter>
@@ -1289,6 +1386,10 @@
                 <category android:name="android.cts.intent.category.MANUAL_TEST" />
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/test_category_jobscheduler" />
+            <meta-data android:name="test_excluded_features"
+                    android:value="android.hardware.type.television" />
+            <meta-data android:name="test_excluded_features"
+                    android:value="android.software.leanback" />
         </activity>
 
         <activity android:name=".jobscheduler.ChargingConstraintTestActivity" android:label="@string/js_charging_test">
@@ -1297,6 +1398,10 @@
                 <category android:name="android.cts.intent.category.MANUAL_TEST" />
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/test_category_jobscheduler" />
+            <meta-data android:name="test_excluded_features"
+                    android:value="android.hardware.type.television" />
+            <meta-data android:name="test_excluded_features"
+                    android:value="android.software.leanback" />
         </activity>
 
         <activity android:name=".jobscheduler.ConnectivityConstraintTestActivity" android:label="@string/js_connectivity_test">
@@ -1305,6 +1410,10 @@
                 <category android:name="android.cts.intent.category.MANUAL_TEST" />
             </intent-filter>
             <meta-data android:name="test_category" android:value="@string/test_category_jobscheduler" />
+            <meta-data android:name="test_excluded_features"
+                    android:value="android.hardware.type.television" />
+            <meta-data android:name="test_excluded_features"
+                    android:value="android.software.leanback" />
         </activity>
 
         <service android:name=".jobscheduler.MockJobService"
