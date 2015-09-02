@@ -74,8 +74,11 @@ public class SimpleReaderActivity extends PassFailButtons.Activity implements Re
     @Override
     protected void onResume() {
         super.onResume();
-        mAdapter.enableReaderMode(this, this, NfcAdapter.FLAG_READER_NFC_A |
-                NfcAdapter.FLAG_READER_NFC_BARCODE | NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK, null);
+        if (mAdapter != null) {
+            mAdapter.enableReaderMode(this, this, NfcAdapter.FLAG_READER_NFC_A |
+                    NfcAdapter.FLAG_READER_NFC_BARCODE | NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK, null);
+        }
+
         Intent intent = getIntent();
         Parcelable[] apdus = intent.getParcelableArrayExtra(EXTRA_APDUS);
         if (apdus != null) {
@@ -165,6 +168,9 @@ public class SimpleReaderActivity extends PassFailButtons.Activity implements Re
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position,
             long id) {
+        if (mAdapter == null) {
+            return;
+        }
         if (position == 0) {
             // Type-A
             mAdapter.disableReaderMode(this);

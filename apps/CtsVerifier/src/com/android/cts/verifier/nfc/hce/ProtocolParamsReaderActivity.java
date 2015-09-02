@@ -38,6 +38,9 @@ public class ProtocolParamsReaderActivity extends PassFailButtons.Activity imple
     @Override
     protected void onResume() {
         super.onResume();
+        if (mAdapter == null) {
+            return;
+        }
         mAdapter.enableReaderMode(this, this, NfcAdapter.FLAG_READER_NFC_A |
                 NfcAdapter.FLAG_READER_NFC_BARCODE | NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK, null);
     }
