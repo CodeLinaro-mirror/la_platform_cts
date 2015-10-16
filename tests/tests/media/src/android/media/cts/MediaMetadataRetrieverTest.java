@@ -118,4 +118,23 @@ public class MediaMetadataRetrieverTest extends AndroidTestCase {
         assertNull("Writer was unexpectedly present",
                 retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_WRITER));
     }
+
+    public void testID3v2EmbeddedPicture() {
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+
+        try {
+            Resources resources = getContext().getResources();
+            AssetFileDescriptor afd = resources.openRawResourceFd(
+                    R.raw.id3v2_3_extended_header_overflow_padding);
+
+            retriever.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
+
+            afd.close();
+        } catch (Exception e) {
+            fail("Unable to open file");
+        }
+
+        assertEquals("EmbeddedPicture was other than expected null array",
+                null, retriever.getEmbeddedPicture());
+    }
 }
