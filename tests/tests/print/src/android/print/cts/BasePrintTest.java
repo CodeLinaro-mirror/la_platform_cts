@@ -139,7 +139,20 @@ public abstract class BasePrintTest extends UiAutomatorTestCase {
     }
 
     @Override
+    protected void runTest() throws Throwable {
+        // Do nothing if the device does not support printing.
+        if (supportsPrinting()) {
+            super.runTest();
+        }
+    }
+
+    @Override
     public void setUp() throws Exception {
+        super.setUp();
+        if (!supportsPrinting()) {
+            return;
+        }
+
         // Make sure we start with a clean slate.
         clearPrintSpoolerData();
         enablePrintServices();
@@ -176,6 +189,10 @@ public abstract class BasePrintTest extends UiAutomatorTestCase {
 
     @Override
     public void tearDown() throws Exception {
+        if (!supportsPrinting()) {
+            return;
+        }
+
         // Done with the activity.
         getActivity().finish();
         enableImes();
@@ -193,6 +210,8 @@ public abstract class BasePrintTest extends UiAutomatorTestCase {
         disablePrintServices();
         // Make sure the spooler is cleaned.
         clearPrintSpoolerData();
+
+        super.tearDown();
     }
 
     protected void print(final PrintDocumentAdapter adapter) {
@@ -541,6 +560,7 @@ public abstract class BasePrintTest extends UiAutomatorTestCase {
     }
 
     protected boolean supportsPrinting() {
-        return getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_PRINTING);
+        return getInstrumentation().getContext().getPackageManager()
+                .hasSystemFeature(PackageManager.FEATURE_PRINTING);
     }
 }

@@ -160,6 +160,14 @@ public class MediaUtils {
         return null;
     }
 
+    public static boolean canEncode(MediaFormat format) {
+        if (sMCL.findEncoderForFormat(format) == null) {
+            Log.i(TAG, "no encoder for " + format);
+            return false;
+        }
+        return true;
+    }
+
     public static boolean canDecode(MediaFormat format) {
         if (sMCL.findDecoderForFormat(format) == null) {
             Log.i(TAG, "no decoder for " + format);
@@ -330,11 +338,32 @@ public class MediaUtils {
                 ex.release();
             }
         }
-        return false;
+        return true;
     }
 
     public static boolean checkCodecsForPath(Context context, String path) {
         return check(hasCodecsForPath(context, path), "no decoder found");
+    }
+
+    public static boolean hasCodecForDomain(boolean encoder, String domain) {
+        for (MediaCodecInfo info : sMCL.getCodecInfos()) {
+            if (encoder != info.isEncoder()) {
+                continue;
+            }
+
+            for (String type : info.getSupportedTypes()) {
+                if (type.toLowerCase().startsWith(domain.toLowerCase() + "/")) {
+                    Log.i(TAG, "found codec " + info.getName() + " for mime " + type);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean checkCodecForDomain(boolean encoder, String domain) {
+        return check(hasCodecForDomain(encoder, domain),
+                "no " + domain + (encoder ? " encoder" : " decoder") + " found");
     }
 
     private static boolean hasCodecForMime(boolean encoder, String mime) {
@@ -384,6 +413,10 @@ public class MediaUtils {
         MediaFormat format = MediaFormat.createVideoFormat(mime, width, height);
         format.setFloat(MediaFormat.KEY_FRAME_RATE, rate);
         return canDecode(format);
+    }
+
+    public static boolean checkEncoderForFormat(MediaFormat format) {
+        return check(canEncode(format), "no encoder for " + format);
     }
 
     public static boolean checkDecoderForFormat(MediaFormat format) {
