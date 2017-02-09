@@ -28,7 +28,10 @@ LOCAL_SRC_FILES := \
 		android_security_cts_LinuxRngTest.cpp \
 		android_security_cts_LoadEffectLibraryTest.cpp \
 		android_security_cts_NativeCodeTest.cpp \
-		android_security_cts_AudioPolicyBinderTest.cpp
+		android_security_cts_LoadEffectLibraryTest.cpp \
+		android_security_cts_AudioPolicyBinderTest.cpp \
+		android_security_cts_AudioFlingerBinderTest.cpp \
+		android_security_cts_LoadEffectLibraryTest.cpp
 
 LOCAL_C_INCLUDES := $(JNI_H_INCLUDE)
 
